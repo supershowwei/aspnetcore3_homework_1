@@ -52,22 +52,15 @@ namespace EFCoreWebApiHomework.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(department).State = EntityState.Modified;
+            var rowversion = _context.Department.FromSqlInterpolated(
+                    $"EXEC [dbo].[Department_Update] {id}, {department.Name}, {department.Budget}, {department.StartDate}, {department.InstructorId}, {department.RowVersion}")
+                .Select(x => x.RowVersion)
+                .AsEnumerable()
+                .SingleOrDefault();
 
-            try
+            if (rowversion == null)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!DepartmentExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
             return NoContent();
@@ -80,7 +73,7 @@ namespace EFCoreWebApiHomework.Controllers
         public async Task<ActionResult<Department>> PostDepartment(Department department)
         {
             department.DepartmentId = _context.Department.FromSqlInterpolated(
-                    $"EXECUTE [dbo].[Department_Insert] {department.Name}, {department.Budget}, {department.StartDate}, {department.InstructorId}")
+                    $"EXEC [dbo].[Department_Insert] {department.Name}, {department.Budget}, {department.StartDate}, {department.InstructorId}")
                 .Select(x => x.DepartmentId)
                 .AsEnumerable()
                 .Single();
