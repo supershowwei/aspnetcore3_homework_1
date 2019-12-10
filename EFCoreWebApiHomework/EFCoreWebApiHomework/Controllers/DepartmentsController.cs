@@ -52,11 +52,16 @@ namespace EFCoreWebApiHomework.Controllers
                 return BadRequest();
             }
 
-            var rowversion = _context.Department.FromSqlInterpolated(
-                    $"EXEC [dbo].[Department_Update] {id}, {department.Name}, {department.Budget}, {department.StartDate}, {department.InstructorId}, {department.RowVersion}")
-                .Select(x => x.RowVersion)
-                .AsEnumerable()
-                .SingleOrDefault();
+            var existedDepartment = await _context.Department.FindAsync(id);
+            if (existedDepartment == null)
+            {
+                return NotFound();
+            }
+
+            var rowversion = (await _context.Department.FromSqlInterpolated(
+                                      $"EXEC [dbo].[Department_Update] {id}, {department.Name}, {department.Budget}, {department.StartDate}, {department.InstructorId}, {existedDepartment.RowVersion}")
+                                  .Select(x => x.RowVersion)
+                                  .ToListAsync()).SingleOrDefault();
 
             if (rowversion == null)
             {
@@ -72,11 +77,10 @@ namespace EFCoreWebApiHomework.Controllers
         [HttpPost]
         public async Task<ActionResult<Department>> PostDepartment(Department department)
         {
-            department.DepartmentId = _context.Department.FromSqlInterpolated(
-                    $"EXEC [dbo].[Department_Insert] {department.Name}, {department.Budget}, {department.StartDate}, {department.InstructorId}")
-                .Select(x => x.DepartmentId)
-                .AsEnumerable()
-                .Single();
+            department.DepartmentId = (await _context.Department.FromSqlInterpolated(
+                                               $"EXEC [dbo].[Department_Insert] {department.Name}, {department.Budget}, {department.StartDate}, {department.InstructorId}")
+                                           .Select(x => x.DepartmentId)
+                                           .ToListAsync()).Single();
 
             return CreatedAtAction("GetDepartment", new { id = department.DepartmentId }, department);
         }
@@ -91,8 +95,8 @@ namespace EFCoreWebApiHomework.Controllers
                 return NotFound();
             }
 
-            _context.Department.Remove(department);
-            await _context.SaveChangesAsync();
+            await _context.Database.ExecuteSqlInterpolatedAsync(
+                $"EXEC [dbo].[Department_Delete] {department.DepartmentId}, {department.RowVersion}");
 
             return department;
         }
