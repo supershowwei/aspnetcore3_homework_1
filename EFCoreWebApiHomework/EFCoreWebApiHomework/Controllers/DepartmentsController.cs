@@ -79,8 +79,11 @@ namespace EFCoreWebApiHomework.Controllers
         [HttpPost]
         public async Task<ActionResult<Department>> PostDepartment(Department department)
         {
-            _context.Department.Add(department);
-            await _context.SaveChangesAsync();
+            department.DepartmentId = _context.Department.FromSqlInterpolated(
+                    $"EXECUTE [dbo].[Department_Insert] {department.Name}, {department.Budget}, {department.StartDate}, {department.InstructorId}")
+                .Select(x => x.DepartmentId)
+                .AsEnumerable()
+                .Single();
 
             return CreatedAtAction("GetDepartment", new { id = department.DepartmentId }, department);
         }
