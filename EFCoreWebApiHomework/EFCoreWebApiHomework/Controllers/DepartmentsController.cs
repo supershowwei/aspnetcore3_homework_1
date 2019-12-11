@@ -59,7 +59,7 @@ namespace EFCoreWebApiHomework.Controllers
             }
 
             var rowversion = (await _context.Department.FromSqlInterpolated(
-                                      $"EXEC [dbo].[Department_Update] {id}, {department.Name}, {department.Budget}, {department.StartDate}, {department.InstructorId}, {existedDepartment.RowVersion}")
+                                      $"EXEC [dbo].[Department_Update] {id}, {department.Name}, {department.Budget}, {department.StartDate}, {department.InstructorId}, {existedDepartment.RowVersion}; UPDATE Department SET DateModified = GETDATE() WHERE DepartmentID = {id};")
                                   .Select(x => x.RowVersion)
                                   .ToListAsync()).SingleOrDefault();
 
@@ -78,7 +78,7 @@ namespace EFCoreWebApiHomework.Controllers
         public async Task<ActionResult<Department>> PostDepartment(Department department)
         {
             department.DepartmentId = (await _context.Department.FromSqlInterpolated(
-                                               $"EXEC [dbo].[Department_Insert] {department.Name}, {department.Budget}, {department.StartDate}, {department.InstructorId}")
+                                               $"EXEC [dbo].[Department_Insert] {department.Name}, {department.Budget}, {department.StartDate}, {department.InstructorId}; ")
                                            .Select(x => x.DepartmentId)
                                            .ToListAsync()).Single();
 
