@@ -24,14 +24,14 @@ namespace EFCoreWebApiHomework.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Department>>> GetDepartment()
         {
-            return await _context.Department.ToListAsync();
+            return await _context.Department.Where(x => !x.IsDeleted).ToListAsync();
         }
 
         // GET: api/Departments/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Department>> GetDepartment(int id)
         {
-            var department = await _context.Department.FindAsync(id);
+            var department = await _context.Department.SingleOrDefaultAsync(x => x.DepartmentId.Equals(id) && !x.IsDeleted);
 
             if (department == null)
             {
@@ -52,7 +52,7 @@ namespace EFCoreWebApiHomework.Controllers
                 return BadRequest();
             }
 
-            var existedDepartment = await _context.Department.FindAsync(id);
+            var existedDepartment = await _context.Department.SingleOrDefaultAsync(x => x.DepartmentId.Equals(id) && !x.IsDeleted);
             if (existedDepartment == null)
             {
                 return NotFound();
@@ -85,9 +85,9 @@ namespace EFCoreWebApiHomework.Controllers
             return CreatedAtAction("GetDepartment", new { id = department.DepartmentId }, department);
         }
 
-        // DELETE: api/Departments/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Department>> DeleteDepartment(int id)
+        // DELETE: api/Departments/5/real
+        [HttpDelete("{id}/real")]
+        public async Task<ActionResult<Department>> RealDeleteDepartment(int id)
         {
             var department = await _context.Department.FindAsync(id);
             if (department == null)
@@ -97,6 +97,23 @@ namespace EFCoreWebApiHomework.Controllers
 
             await _context.Database.ExecuteSqlInterpolatedAsync(
                 $"EXEC [dbo].[Department_Delete] {department.DepartmentId}, {department.RowVersion}");
+
+            return department;
+        }
+
+        // DELETE: api/Departments/5
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<Department>> DeleteDepartment(int id)
+        {
+            var department = await _context.Department.SingleOrDefaultAsync(x => x.DepartmentId.Equals(id) && !x.IsDeleted);
+            if (department == null)
+            {
+                return NotFound();
+            }
+
+            department.IsDeleted = true;
+
+            await _context.SaveChangesAsync();
 
             return department;
         }

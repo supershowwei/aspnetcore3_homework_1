@@ -24,14 +24,14 @@ namespace EFCoreWebApiHomework.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Course>>> GetCourse()
         {
-            return await _context.Course.ToListAsync();
+            return await _context.Course.Where(x => !x.IsDeleted).ToListAsync();
         }
 
         // GET: api/Courses/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Course>> GetCourse(int id)
         {
-            var course = await _context.Course.FindAsync(id);
+            var course = await _context.Course.SingleOrDefaultAsync(x => x.CourseId.Equals(id) && !x.IsDeleted);
 
             if (course == null)
             {
@@ -50,6 +50,12 @@ namespace EFCoreWebApiHomework.Controllers
             if (id != course.CourseId)
             {
                 return BadRequest();
+            }
+
+            var isExisted = await _context.Course.AnyAsync(x => x.CourseId.Equals(id) && !x.IsDeleted);
+            if (!isExisted)
+            {
+                return this.NotFound();
             }
 
             _context.Entry(course).State = EntityState.Modified;
@@ -89,13 +95,14 @@ namespace EFCoreWebApiHomework.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Course>> DeleteCourse(int id)
         {
-            var course = await _context.Course.FindAsync(id);
+            var course = await _context.Course.SingleOrDefaultAsync(x => x.CourseId.Equals(id) && !x.IsDeleted);
             if (course == null)
             {
                 return NotFound();
             }
 
-            _context.Course.Remove(course);
+            course.IsDeleted = true;
+
             await _context.SaveChangesAsync();
 
             return course;
@@ -122,7 +129,7 @@ namespace EFCoreWebApiHomework.Controllers
         [HttpGet("{id:int}/student-count")]
         public async Task<ActionResult<VwCourseStudentCount>> StudentCount(int id)
         {
-            var studentCount = await _context.VwCourseStudentCount.Where(x => x.CourseId.Equals(id)).SingleOrDefaultAsync();
+            var studentCount = await _context.VwCourseStudentCount.SingleOrDefaultAsync(x => x.CourseId.Equals(id));
 
             if (studentCount == null) return this.NotFound();
 
