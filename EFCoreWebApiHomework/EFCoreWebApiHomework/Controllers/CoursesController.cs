@@ -101,6 +101,34 @@ namespace EFCoreWebApiHomework.Controllers
             return course;
         }
 
+        [HttpGet("all-students")]
+        public async Task<ActionResult<IEnumerable<VwCourseStudents>>> Students()
+        {
+            return await _context.VwCourseStudents.ToListAsync();
+        }
+
+        [HttpGet("{id:int}/students")]
+        public async Task<ActionResult<IEnumerable<VwCourseStudents>>> Students(int id)
+        {
+            return await _context.VwCourseStudents.Where(x => x.CourseId.Equals(id)).ToListAsync();
+        }
+
+        [HttpGet("all-student-count")]
+        public async Task<ActionResult<IEnumerable<VwCourseStudentCount>>> StudentCount()
+        {
+            return await _context.VwCourseStudentCount.ToListAsync();
+        }
+
+        [HttpGet("{id:int}/student-count")]
+        public async Task<ActionResult<VwCourseStudentCount>> StudentCount(int id)
+        {
+            var studentCount = await _context.VwCourseStudentCount.Where(x => x.CourseId.Equals(id)).SingleOrDefaultAsync();
+
+            if (studentCount == null) return this.NotFound();
+
+            return studentCount;
+        }
+
         private bool CourseExists(int id)
         {
             return _context.Course.Any(e => e.CourseId == id);
