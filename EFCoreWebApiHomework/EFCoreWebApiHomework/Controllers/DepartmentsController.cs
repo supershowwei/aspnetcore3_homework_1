@@ -101,6 +101,24 @@ namespace EFCoreWebApiHomework.Controllers
             return department;
         }
 
+        [HttpGet("all-course-count")]
+        public async Task<ActionResult<IEnumerable<VwDepartmentCourseCount>>> CourseCount()
+        {
+            return await _context.VwDepartmentCourseCount.FromSqlRaw("SELECT * FROM vwDepartmentCourseCount").ToListAsync();
+        }
+
+        [HttpGet("{id:int}/course-count")]
+        public async Task<ActionResult<VwDepartmentCourseCount>> CourseCount(int id)
+        {
+            var courseCount = await _context.VwDepartmentCourseCount
+                .FromSqlInterpolated($"SELECT * FROM vwDepartmentCourseCount WHERE DepartmentID = {id}")
+                .SingleOrDefaultAsync();
+
+            if (courseCount == null) return this.NotFound();
+
+            return courseCount;
+        }
+
         private bool DepartmentExists(int id)
         {
             return _context.Department.Any(e => e.DepartmentId == id);
