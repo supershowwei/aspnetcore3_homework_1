@@ -31,7 +31,10 @@ namespace EFCoreWebApiHomework
             services.AddControllers(
                 options =>
                     {
-                        options.FormatterMappings.SetMediaTypeMappingForFormat("js", "text/javascript");
+                        if (string.IsNullOrEmpty(options.FormatterMappings.GetMediaTypeMappingForFormat("js")))
+                        {
+                            options.FormatterMappings.SetMediaTypeMappingForFormat("js", "text/javascript");
+                        }
                     });
 
             services.AddDbContext<ContosoUniversityContext>(
