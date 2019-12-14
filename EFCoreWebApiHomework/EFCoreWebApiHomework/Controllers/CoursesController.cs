@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EFCoreWebApiHomework.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,7 @@ namespace EFCoreWebApiHomework.Controllers
 
         // GET: api/Courses
         [HttpGet]
+        [TypeFilter(typeof(LoginAttribute))]
         public async Task<ActionResult<IEnumerable<Course>>> GetCourse()
         {
             return await _context.Course.Where(x => !x.IsDeleted).ToListAsync();
@@ -35,6 +37,7 @@ namespace EFCoreWebApiHomework.Controllers
 
         // GET: api/Courses/5
         [HttpGet("{id}")]
+        [LoggedIn]
         public async Task<ActionResult<Course>> GetCourse(int id)
         {
             var course = await _context.Course.SingleOrDefaultAsync(x => x.CourseId.Equals(id) && !x.IsDeleted);
