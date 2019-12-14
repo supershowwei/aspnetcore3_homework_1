@@ -20,6 +20,12 @@ namespace EFCoreWebApiHomework.Controllers
             _context = context;
         }
 
+        [HttpGet("~/localredirect")]
+        public async Task<IActionResult> LocalRedirect()
+        {
+            return this.LocalRedirect("~/api/courses");
+        }
+
         // GET: api/Courses
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Course>>> GetCourse()
@@ -45,11 +51,18 @@ namespace EFCoreWebApiHomework.Controllers
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for
         // more details see https://aka.ms/RazorPagesCRUD.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCourse(int id, Course course)
+        public async Task<IActionResult> PutCourse(int id)
         {
-            if (id != course.CourseId)
+            var course = _context.Course.Find(id);
+
+            if (course == null)
             {
                 return BadRequest();
+            }
+
+            if (!await TryUpdateModelAsync(course))
+            {
+                return this.BadRequest();
             }
 
             var isExisted = await _context.Course.AnyAsync(x => x.CourseId.Equals(id) && !x.IsDeleted);
@@ -59,6 +72,37 @@ namespace EFCoreWebApiHomework.Controllers
             }
 
             _context.Entry(course).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CourseExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // PATCH: api/Courses/5
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> PatchCourse(int id, UpdatedCourse updatedCourse)
+        {
+            var course = await _context.Course.SingleOrDefaultAsync(x => x.CourseId.Equals(id) && !x.IsDeleted);
+            if (course == null)
+            {
+                return this.NotFound();
+            }
+
+            course.Credits = updatedCourse.Credits;
 
             try
             {
