@@ -31,6 +31,8 @@ namespace EFCoreWebApiHomework
 
             services.AddDbContext<ContosoUniversityContext>(
                 optionsBuilder => { optionsBuilder.UseSqlServer(this.Configuration.GetConnectionString("ContosoUniversity")); });
+
+            services.AddSwaggerDocument();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -42,6 +44,11 @@ namespace EFCoreWebApiHomework
             }
 
             app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
+
+            app.UseOpenApi();
+            app.UseSwaggerUi3();
 
             app.UseRouting();
 
