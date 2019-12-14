@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 
 namespace EFCoreWebApiHomework.Controllers
@@ -37,6 +38,18 @@ namespace EFCoreWebApiHomework.Controllers
                 Summary = Summaries[rng.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+
+        // {extension?} 加了問號表示可以不用副檔名
+        [HttpGet("~/scripts/{filename}.{extension?}"), FormatFilter]
+        public IActionResult GetFile(string filename)
+        {
+            if (filename.Equals("555"))
+            {
+                return this.Content("var a = 111;\r\nvar b = 222;", "text/javascript");
+            }
+
+            return this.NotFound();
         }
     }
 }

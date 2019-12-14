@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace EFCoreWebApiHomework
 {
@@ -27,7 +28,11 @@ namespace EFCoreWebApiHomework
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers(
+                options =>
+                    {
+                        options.FormatterMappings.SetMediaTypeMappingForFormat("js", "text/javascript");
+                    });
 
             services.AddDbContext<ContosoUniversityContext>(
                 optionsBuilder => { optionsBuilder.UseSqlServer(this.Configuration.GetConnectionString("ContosoUniversity")); });
