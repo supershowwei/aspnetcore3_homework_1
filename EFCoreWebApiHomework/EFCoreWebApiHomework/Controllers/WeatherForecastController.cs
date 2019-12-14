@@ -40,9 +40,8 @@ namespace EFCoreWebApiHomework.Controllers
             .ToArray();
         }
 
-        // {extension?} 加了問號表示可以不用副檔名
-        [HttpGet("~/scripts/{filename}.{extension?}"), FormatFilter]
-        public IActionResult GetFile(string filename)
+        [HttpGet("~/js/{filename}.js")]
+        public IActionResult GetFile(string filename, string format)
         {
             if (filename.Equals("555"))
             {
