@@ -41,7 +41,7 @@ namespace EFCoreWebApiHomework.Controllers
         }
 
         [HttpGet("~/js/{filename}.js")]
-        public IActionResult GetFile(string filename, string format)
+        public IActionResult GetFile(string filename)
         {
             if (filename.Equals("555"))
             {
