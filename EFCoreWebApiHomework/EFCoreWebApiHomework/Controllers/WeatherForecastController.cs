@@ -27,6 +27,11 @@ namespace EFCoreWebApiHomework.Controllers
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
+            using (_logger.BeginScope("test"))
+            {
+                _logger.LogError("Errors occurred.");
+            }
+
             var a = 0;
             var b = 1 / a;
 
